@@ -1,0 +1,25 @@
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Local backups
+*.bak
+*.backup
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Private lab inputs and generated reports
+samples/apk/
+samples/reports/
+reports/
+
+# Generated portfolio data
+docs/portfolio/*.json
