@@ -468,10 +468,19 @@ def main():
         )
 
         json_data = {
-            "application": metadata.get("app_name")
+            "application": (
+                metadata.get("app_name")
                 or metadata.get("application")
-                or "Not provided",
-            "package_name": metadata.get("package_name") or "Not provided",
+                or report.get("app_name")
+                or report.get("APP_NAME")
+                or "Not provided"
+            ),
+            "package_name": (
+                metadata.get("package_name")
+                or report.get("package_name")
+                or report.get("PACKAGE_NAME")
+                or "Not provided"
+            ),
             "assessment_status": "Draft; findings require validation",
             "finding_count": len(findings),
             "findings": findings,

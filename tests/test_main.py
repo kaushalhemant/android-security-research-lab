@@ -157,3 +157,29 @@ def test_json_report_severity_counts():
     assert sum(f["severity"] == "high" for f in findings) == 5
     assert sum(f["severity"] == "warning" for f in findings) == 7
     assert sum(f["severity"] == "info" for f in findings) == 2
+
+
+def test_main_exports_top_level_mobsf_metadata(tmp_path, monkeypatch):
+    import json
+    import sys
+    from pathlib import Path
+    from src.main import main
+
+    root = Path(__file__).resolve().parents[1]
+    source = root / "samples" / "reports" / "live_mobsf_report.json"
+
+    if not source.exists():
+        pytest.skip("Live MobSF report is not available locally.")
+
+    output = tmp_path / "assessment.md"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["main.py", str(source), str(output)],
+    )
+
+    assert main() == 0
+
+    exported = json.loads(output.with_suffix(".json").read_text())
+    assert exported["application"] == "Diva"
+    assert exported["package_name"] == "jakhar.aseem.diva"
