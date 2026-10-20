@@ -183,3 +183,43 @@ def test_main_exports_top_level_mobsf_metadata(tmp_path, monkeypatch):
     exported = json.loads(output.with_suffix(".json").read_text())
     assert exported["application"] == "Diva"
     assert exported["package_name"] == "jakhar.aseem.diva"
+
+
+def test_build_markdown_uses_defaults_for_missing_metadata():
+    output = build_markdown({
+        "findings": [{
+            "title": "Example finding",
+            "severity": "high",
+            "description": "Example description",
+        }]
+    })
+
+    assert "**Application:** Not provided" in output
+    assert "**Package:** Not provided" in output
+    assert "### 1. Example finding" in output
+
+
+def test_build_markdown_counts_unknown_severity_correctly():
+    output = build_markdown({
+        "metadata": {"app_name": "Test"},
+        "findings": [{
+            "title": "Unclassified issue",
+            "severity": "unexpected-value",
+        }]
+    })
+
+    assert "### 1. Unclassified issue" in output
+    assert "- **Severity:** Unknown" in output
+    assert "| Unknown | 1 |" in output
+
+
+def test_build_markdown_generates_fallback_remediation():
+    output = build_markdown({
+        "findings": [{
+            "title": "Debug configuration enabled",
+            "severity": "high",
+        }]
+    })
+
+    assert "**Suggested remediation**" in output
+    assert "Disable debugging in production builds" in output
