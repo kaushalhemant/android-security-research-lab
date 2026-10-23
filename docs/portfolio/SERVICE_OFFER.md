@@ -41,4 +41,4 @@ A sanitized demonstration using an intentionally vulnerable
 training application can be provided on request.
 
 ## Contact
-[Insert your professional email or LinkedIn profile before publishing.]
+GitHub: https://github.com/kaushalhemant

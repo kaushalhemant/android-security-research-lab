@@ -125,3 +125,13 @@ being improved iteratively.
 
 No license has been specified yet. Do not assume the project is licensed for
 redistribution or commercial reuse until a license is added.
+
+## Portfolio and services
+
+- [Android security research portfolio](docs/portfolio/README.md)
+- [Android assessment support service](docs/portfolio/SERVICE_OFFER.md)
+- [DIVA lab demonstration](docs/portfolio/demo/diva-lab-report.md)
+- [Demo notes and limitations](docs/portfolio/demo/README.md)
+
+This is a research prototype. Scanner findings require human validation.
+
