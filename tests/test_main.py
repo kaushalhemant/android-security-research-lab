@@ -223,3 +223,65 @@ def test_build_markdown_generates_fallback_remediation():
 
     assert "**Suggested remediation**" in output
     assert "Disable debugging in production builds" in output
+
+
+
+def test_find_duplicate_candidates_flags_similar_titles():
+    from src.main import find_duplicate_candidates
+
+    findings = [
+        {"title": "Debug Enabled For App", "severity": "high"},
+        {"title": "Debug Enabled For App!", "severity": "high"},
+    ]
+
+    candidates = find_duplicate_candidates(findings)
+
+    assert len(candidates) == 1
+    assert candidates[0]["first_index"] == 0
+    assert candidates[0]["second_index"] == 1
+    assert candidates[0]["review_required"] is True
+
+
+def test_find_duplicate_candidates_keeps_distinct_findings_separate():
+    from src.main import find_duplicate_candidates
+
+    findings = [
+        {"title": "Cleartext traffic enabled", "severity": "medium"},
+        {"title": "Debug certificate used", "severity": "high"},
+    ]
+
+    assert find_duplicate_candidates(findings) == []
+
+
+def test_find_duplicate_candidates_does_not_mutate_findings():
+    from copy import deepcopy
+    from src.main import find_duplicate_candidates
+
+    findings = [
+        {"title": "Debug Enabled For App", "severity": "high"},
+        {"title": "Debug Enabled For App!", "severity": "high"},
+    ]
+    original = deepcopy(findings)
+
+    find_duplicate_candidates(findings)
+
+    assert findings == original
+
+
+def test_duplicate_detector_separates_different_android_activities():
+    from src.main import find_duplicate_candidates
+
+    findings = [
+        {
+            "title": "Activity (jakhar.aseem.diva.APICredsActivity) is not Protected.",
+            "severity": "warning",
+            "description": "An Activity is shared with other apps.",
+        },
+        {
+            "title": "Activity (jakhar.aseem.diva.APICreds2Activity) is not Protected.",
+            "severity": "warning",
+            "description": "An Activity is shared with other apps.",
+        },
+    ]
+
+    assert find_duplicate_candidates(findings) == []

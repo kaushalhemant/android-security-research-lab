@@ -345,6 +345,81 @@ def _markdown_text(value):
     return _as_text(value).replace("\r\n", "\n").strip()
 
 
+
+
+def find_duplicate_candidates(findings):
+    """Return possible duplicate finding pairs for human review."""
+    import re
+    from difflib import SequenceMatcher
+
+    def normalize(value):
+        value = str(value or "").lower()
+        value = re.sub(r"[^a-z0-9]+", " ", value)
+        return " ".join(value.split())
+
+    def components(title):
+        # Capture Android component class names such as APICredsActivity.
+        pattern = r"\b[A-Za-z_$][A-Za-z0-9_$]*(?:Activity|Service|Receiver|Provider)\b"
+        return set(re.findall(pattern, str(title or "")))
+
+    normalized = []
+    for finding in findings:
+        item = normalise_finding(finding)
+        normalized.append({
+            "title": normalize(item["title"]),
+            "description": normalize(item["description"]),
+            "components": components(item["title"]),
+        })
+
+    candidates = []
+    for i, first in enumerate(normalized):
+        for j in range(i + 1, len(normalized)):
+            second = normalized[j]
+
+            same_title = first["title"] == second["title"]
+            similar_title = (
+                SequenceMatcher(None, first["title"], second["title"]).ratio()
+                >= 0.90
+            )
+            same_description = (
+                bool(first["description"])
+                and first["description"] == second["description"]
+            )
+
+            different_components = (
+                bool(first["components"])
+                and bool(second["components"])
+                and first["components"].isdisjoint(second["components"])
+            )
+
+            if different_components:
+                continue
+
+            if same_title or similar_title or same_description:
+                candidates.append({
+                    "first_index": i,
+                    "second_index": j,
+                    "first_title": (
+                        findings[i].get("title")
+                        or findings[i].get("name")
+                        or "Untitled finding"
+                    ),
+                    "second_title": (
+                        findings[j].get("title")
+                        or findings[j].get("name")
+                        or "Untitled finding"
+                    ),
+                    "reason": (
+                        "same normalized title" if same_title
+                        else "very similar titles" if similar_title
+                        else "same normalized description"
+                    ),
+                    "review_required": True,
+                })
+
+    return candidates
+
+
 def build_markdown(report):
     """Build a Markdown security report from a custom or MobSF JSON report."""
     if "findings" in report:
